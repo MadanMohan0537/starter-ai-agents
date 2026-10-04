@@ -1,17 +1,24 @@
 # 🤖 Starter AI Agents
 
 <p align="center">
-  <strong>A curated collection of 16 production-ready AI agent projects — each self-contained, fully documented, and runnable in under 5 minutes.</strong>
+  <strong>A curated collection of 16 independent AI agent examples, with per-project setup instructions and dependencies.</strong>
 </p>
 
 <p align="center">
-  <a href="#license"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License"></a>
   <a href="https://www.python.org"><img src="https://img.shields.io/badge/Python-3.10%2B-3776ab?style=flat-square&logo=python" alt="Python"></a>
   <a href="https://openai.com"><img src="https://img.shields.io/badge/OpenAI-GPT--4o%20%2F%20o1-brightgreen?style=flat-square&logo=openai" alt="OpenAI"></a>
   <a href="#whats-inside"><img src="https://img.shields.io/badge/Agents-16%20Included-orange?style=flat-square" alt="16 Agents"></a>
 </p>
 
 ---
+
+## Choose one example first
+
+This is a collection of independent Python examples, not a single orchestrated agent platform. Each directory has its own code, requirements and instructions. Install one example in an isolated virtual environment instead of combining all dependency sets.
+
+For a small starting point, use [AI Travel Agent](ai_travel_agent/README.md). Its [implementation](ai_travel_agent/agent.py) reads `OPENAI_API_KEY` and calls `gpt-4o-mini`. Model calls can incur provider charges. Outputs are generated suggestions: verify travel availability, financial facts and other consequential claims yourself.
+
+Before running another example, read its local README and requirements for additional provider keys, system tools and input formats. The root catalog is navigation, not a promise that every example works with one key or one universal command.
 
 ## 📦 What's Inside
 
@@ -36,7 +43,7 @@
 
 ---
 
-## ⚡ Quickstart (any agent)
+## ⚡ Quickstart: travel example
 
 ```bash
 # 1. Clone the repo
@@ -59,7 +66,7 @@ cp ../.env.example .env   # then edit .env and add OPENAI_API_KEY
 python agent.py
 ```
 
-That's it. Every agent follows the exact same pattern.
+This starts the travel example. For another agent, follow that directory's README for its additional setup requirements.
 
 ---
 
@@ -318,6 +325,6 @@ Built on top of the original [awesome-llm-apps](https://github.com/Shubhamsaboo/
 
 ---
 
-## 📄 License
+## License
 
-MIT — free to use, fork, and build upon.
+No license file is currently included. Add an explicit license before redistributing implementation code or data.
