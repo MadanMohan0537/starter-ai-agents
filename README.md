@@ -1,330 +1,105 @@
-# 🤖 Starter AI Agents
+# Starter AI Agents
 
-<p align="center">
-  <strong>A curated collection of 16 independent AI agent examples, with per-project setup instructions and dependencies.</strong>
-</p>
+**Sixteen small Python examples of LLM "agent" patterns, such as a prompted itinerary, CSV question answering, parallel specialist calls, and browser automation. Each example lives in its own folder with its own `requirements.txt`. This is learning work.**
 
-<p align="center">
-  <a href="https://www.python.org"><img src="https://img.shields.io/badge/Python-3.10%2B-3776ab?style=flat-square&logo=python" alt="Python"></a>
-  <a href="https://openai.com"><img src="https://img.shields.io/badge/OpenAI-GPT--4o%20%2F%20o1-brightgreen?style=flat-square&logo=openai" alt="OpenAI"></a>
-  <a href="#whats-inside"><img src="https://img.shields.io/badge/Agents-16%20Included-orange?style=flat-square" alt="16 Agents"></a>
-</p>
+## Upstream attribution
 
----
+These examples follow the **starter agents** in [awesome-llm-apps](https://github.com/Shubhamsaboo/awesome-llm-apps) by [@Shubhamsaboo](https://github.com/Shubhamsaboo). That project is Apache-2.0. The folder names here match sixteen directories under [`starter_ai_agents/`](https://github.com/Shubhamsaboo/awesome-llm-apps/tree/main/starter_ai_agents). Upstream also has `ai_x402_paying_agent`, which this repo does not include.
 
-## Choose one example first
+This repo is a separate project. GitHub does not mark it as a fork, and the git history starts at the initial import of these scripts. Upstream entry points use other filenames (for example `travel_agent.py`, and a Streamlit command in the upstream README). The files here are separate `agent.py` scripts on the OpenAI Python SDK. They were not compared line by line with the upstream sources.
 
-This is a collection of independent Python examples, not a single orchestrated agent platform. Each directory has its own code, requirements and instructions. Install one example in an isolated virtual environment instead of combining all dependency sets.
+## Problem and who it's for
 
-For a small starting point, use [AI Travel Agent](ai_travel_agent/README.md). Its [implementation](ai_travel_agent/agent.py) reads `OPENAI_API_KEY` and calls `gpt-4o-mini`. Model calls can incur provider charges. Outputs are generated suggestions: verify travel availability, financial facts and other consequential claims yourself.
+Large frameworks can hide the basic steps of an LLM application: the prompt, the client call, and the bit of code that turns the reply into something you can read. This repo is for someone who wants to read and run one small example at a time, including people who are not professional engineers.
 
-Before running another example, read its local README and requirements for additional provider keys, system tools and input formats. The root catalog is navigation, not a promise that every example works with one key or one universal command.
+## Approach
 
-## 📦 What's Inside
+- One folder per example: `agent.py`, `requirements.txt`, and a short README. There is no shared Python package. The shared setup file is the root `.env.example`.
+- Every example imports the OpenAI Python SDK and calls `load_dotenv()`. With no path argument, that searches for `.env` starting in the script's directory and then in parent directories.
+- The usual chat model is `gpt-4o-mini`. The vision examples (`ai_medical_imaging_agent`, `multimodal_ai_agent`) call `gpt-4o`.
+- Other model strings in the code: `tts-1` for blog audio, optional `o1-mini` in the reasoning example, and `grok-beta` in the finance example when `XAI_API_KEY` is set.
+- `REPLICATE_API_TOKEN`, `TAVILY_API_KEY`, and `XAI_API_KEY` are read from the environment. A missing key is handled differently in each example (see the table and Limitations). A missing `OPENAI_API_KEY` is not checked before the client is constructed.
 
-| # | Agent | What it does | Key APIs |
-|---|-------|-------------|----------|
-| 1 | [🎙️ Blog to Podcast](#1-blog-to-podcast-agent) | Converts any blog URL into an MP3 podcast | OpenAI TTS |
-| 2 | [💔 Breakup Recovery](#2-breakup-recovery-agent) | Empathetic CBT-inspired emotional support chat | GPT-4o-mini |
-| 3 | [📊 Data Analysis](#3-data-analysis-agent) | Ask questions about any CSV in plain English | GPT-4o-mini + pandas |
-| 4 | [📈 Data Visualisation](#4-data-visualisation-agent) | Describe a chart → get interactive Plotly output | GPT-4o-mini + Plotly |
-| 5 | [🛡️ Life Insurance Advisor](#5-life-insurance-advisor-agent) | Personalised coverage recommendation (DIME formula) | GPT-4o-mini |
-| 6 | [🏥 Medical Imaging](#6-medical-imaging-agent) | Educational analysis of X-rays, MRIs, CT scans | GPT-4o Vision |
-| 7 | [😂 Meme Generator](#7-meme-generator-agent-browser-use) | AI captions + auto-creates meme on imgflip.com | GPT-4o-mini + browser-use |
-| 8 | [🎵 Music Generator](#8-music-generator-agent) | Writes lyrics + generates 15-sec instrumental | GPT-4o-mini + MusicGen |
-| 9 | [🧠 Reasoning Agent](#9-reasoning-agent) | Step-by-step chain-of-thought problem solver | GPT-4o-mini / o1-mini |
-| 10 | [🚀 Startup Trend Analysis](#10-startup-trend-analysis-agent) | Market research report with web search | GPT-4o-mini + Tavily |
-| 11 | [✈️ Travel Agent](#11-travel-agent) | Full day-by-day itinerary + budget breakdown | GPT-4o-mini |
-| 12 | [🤖 Mixture of Agents](#12-mixture-of-agents) | 4 parallel specialists + 1 synthesiser | AsyncOpenAI |
-| 13 | [🖼️ Multimodal Agent](#13-multimodal-ai-agent) | Chat with text + images together | GPT-4o Vision |
-| 14 | [🔬 Research Agent](#14-openai-research-agent) | Web-searched research briefs (3 depth levels) | OpenAI Responses API |
-| 15 | [🕷️ Web Scraping Agent](#15-web-scraping-agent) | Scrape any URL, extract data in plain English | GPT-4o-mini + BS4 |
-| 16 | [💹 xAI Finance Agent](#16-xai-finance-agent) | Stock & market analysis with Grok / GPT-4o-mini | xAI Grok |
+| # | Folder | What the script does |
+|---|---|---|
+| 1 | `ai_blog_to_podcast_agent` | Fetch paragraph text with BeautifulSoup, ask `gpt-4o-mini` for a podcast script, write `podcast.mp3` with OpenAI TTS (`tts-1`, voice `alloy`) |
+| 2 | `ai_breakup_recovery_agent` | Multi-turn chat. One system prompt sets a supportive-coach persona |
+| 3 | `ai_data_analysis_agent` | Load a CSV with pandas, ask `gpt-4o-mini` for pandas code, run it with `exec()`, then ask the model to explain `result` |
+| 4 | `ai_data_visualisation_agent` | From a CSV and a chart description, generate Plotly code, run it with `exec()`, and call `fig.show()` |
+| 5 | `ai_life_insurance_advisor_agent` | Fixed questionnaire. The system prompt tells the model to estimate coverage and names DIME as an example formula. The script does not calculate DIME itself |
+| 6 | `ai_medical_imaging_agent` | Send a local image to `gpt-4o`. The system prompt requires an educational disclaimer and says the reply is not a diagnosis |
+| 7 | `ai_meme_generator_agent_browseruse` | `gpt-4o-mini` returns caption JSON. `browser-use` plus `langchain-openai` then drives imgflip. If `browser-use` cannot be imported, the script prints the captions |
+| 8 | `ai_music_generator_agent` | `gpt-4o-mini` writes lyrics and a MusicGen prompt. Audio is a Replicate HTTP call (15 seconds) and runs only when `REPLICATE_API_TOKEN` is set |
+| 9 | `ai_reasoning_agent` | Default path sends a step-by-step system prompt to `gpt-4o-mini`. Answering `y` switches to `o1-mini` and sends only the user message |
+| 10 | `ai_startup_trend_analysis_agent` | Two Tavily searches, then a `gpt-4o-mini` report. With no `TAVILY_API_KEY`, each search returns one placeholder result and the OpenAI call still runs |
+| 11 | `ai_travel_agent` | Five prompts, then one `gpt-4o-mini` reply. The system prompt asks for a day-by-day itinerary. The script prints that text and does not parse a schema |
+| 12 | `mixture_of_agents` | Four specialists (Analytical, Creative, Devil's Advocate, Practical) via `AsyncOpenAI` and `asyncio.gather`, then one synthesizer call. All use `gpt-4o-mini` |
+| 13 | `multimodal_ai_agent` | Chat loop. Each turn can include text and local image paths, sent to `gpt-4o`. History stays in memory for that process |
+| 14 | `openai_research_agent` | `client.responses.create` with tool `web_search_preview` and model `gpt-4o-mini`. The strings `quick`, `standard`, and `deep` select length instructions (3 bullets, about 400 words, about 800 words). Any other string makes the instruction the single word `standard` |
+| 15 | `web_scraping_ai_agent` | `requests` plus BeautifulSoup, then `gpt-4o-mini` answers a plain-English extraction question about that page |
+| 16 | `xai_finance_agent` | With `XAI_API_KEY`, chat goes to `https://api.x.ai/v1` with model `grok-beta`. With no xAI key, the script builds a normal OpenAI client and uses `gpt-4o-mini` |
 
----
+## What exists today
 
-## ⚡ Quickstart: travel example
+Checked by reading the files in this repository. None of the examples were executed for this README.
+
+- All sixteen folders above, each with `agent.py`, `requirements.txt`, and a README.
+- Root files: `.env.example`, `.gitignore`, and this README. `.env.example` lists `OPENAI_API_KEY`, `XAI_API_KEY`, `REPLICATE_API_TOKEN`, and `TAVILY_API_KEY`.
+- No sample CSV, image, or audio file is in the repo. `ai_data_analysis_agent` and `ai_data_visualisation_agent` default to `data.csv`. `ai_medical_imaging_agent` defaults to `sample.jpg` and exits when that path is missing.
+- No tests, no CI configuration, no `LICENSE`, and no `NOTICE`.
+- No `wrangler.toml`, Worker entry point, or other Cloudflare Workers config. See Deployment.
+- `ai_x402_paying_agent` exists upstream and is not in this repo. Nothing in this repo implements it.
+
+## How success would be measured
+
+**Not yet measured.** The repo has no run logs, test results, or usage numbers. A reasonable bar for each example would be: from a clean virtual environment, following only that folder's README, the script starts and finishes one prompt with a real API key. Nothing in the repo records that check, and the examples were not run while this README was written.
+
+## Limitations
+
+- **Generated code is executed.** `ai_data_analysis_agent` and `ai_data_visualisation_agent` pass model-written Python to `exec()`. Use a CSV you trust, in a throwaway environment.
+- Model calls cost money on your provider account. This README does not record prices.
+- Replies from the travel, finance, insurance, and medical examples are model text. The medical script's prompt says the analysis is educational and is not a diagnosis. The insurance script prints a line telling you to consult a licensed advisor. The finance prompt says the reply is not financial advice.
+- Optional keys do not share one failure mode. The music script prints a warning and skips audio when `REPLICATE_API_TOKEN` is unset. The startup script substitutes a placeholder search result when `TAVILY_API_KEY` is unset. The finance script changes client and model when `XAI_API_KEY` is unset and does not print a missing-key line. None of the scripts print a dedicated error when `OPENAI_API_KEY` is unset.
+- The meme folder README tells you to run `playwright install chromium`. That command is not in `requirements.txt`.
+- Every dependency line uses a lower bound (`>=`). The research script calls `client.responses.create`. Its requirement is only `openai>=1.0.0`, which does not record the SDK release that added that method.
+- `load_dotenv()` looks for `.env` from the script directory upward. The quick start copies `.env` into the example folder and runs `python agent.py` from that folder.
+- **There is no license file in this repo.** The upstream project is Apache-2.0. This repo does not yet include an Apache-2.0 `LICENSE` or a `NOTICE` crediting upstream.
+
+## Quick start
+
+The music example uses the annotation `str | None`, which needs Python 3.10 or newer. No file in the repo pins the interpreter.
+
+The travel example only needs `OPENAI_API_KEY`. It prompts in the terminal. The commands below were not run while this README was written.
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/MadanMohan0537/starter-ai-agents.git
-cd starter-ai-agents
-
-# 2. Go into any agent folder
-cd ai_travel_agent
-
-# 3. Create a virtual environment
-python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
-
-# 4. Install dependencies
+cd starter-ai-agents/ai_travel_agent
+python -m venv venv && source venv/bin/activate     # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-# 5. Set up your API key
-cp ../.env.example .env   # then edit .env and add OPENAI_API_KEY
-
-# 6. Run
+cp ../.env.example .env                             # then set OPENAI_API_KEY
 python agent.py
 ```
 
-This starts the travel example. For another agent, follow that directory's README for its additional setup requirements.
+For any other example, read that folder's README first. Some need another key, a CSV or image you supply, or an extra tool.
 
----
+Suggested reading order: `ai_reasoning_agent` → `ai_travel_agent` → `ai_data_analysis_agent` → `mixture_of_agents` → `ai_blog_to_podcast_agent` → `ai_meme_generator_agent_browseruse`.
 
-## 🗂️ Repository Structure
+## Deployment
 
-```
-starter-ai-agents/
-│
-├── .env.example                        ← Shared API key template
-├── .gitignore
-├── README.md                           ← This file
-│
-├── ai_blog_to_podcast_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_breakup_recovery_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_data_analysis_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_data_visualisation_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_life_insurance_advisor_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_medical_imaging_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_meme_generator_agent_browseruse/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_music_generator_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_reasoning_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_startup_trend_analysis_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── ai_travel_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── mixture_of_agents/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── multimodal_ai_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── openai_research_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-├── web_scraping_ai_agent/
-│   ├── agent.py
-│   ├── requirements.txt
-│   └── README.md
-│
-└── xai_finance_agent/
-    ├── agent.py
-    ├── requirements.txt
-    └── README.md
+Cloudflare Workers is the planned deploy target. It is not configured yet, and nothing in this repo is deployed there.
+
+There is no `wrangler.toml` and no Worker entry point, so there is no Worker name and no workers.dev URL to preserve. The command to use once a Worker exists is:
+
+```bash
+npx wrangler deploy
 ```
 
----
-
-## 🔑 API Keys Reference
-
-| Key | Where to get it | Used by |
-|-----|----------------|---------|
-| `OPENAI_API_KEY` | [platform.openai.com](https://platform.openai.com/api-keys) | 14 of 16 agents |
-| `XAI_API_KEY` | [console.x.ai](https://console.x.ai) | xai_finance_agent (optional) |
-| `REPLICATE_API_TOKEN` | [replicate.com/account](https://replicate.com/account) | ai_music_generator_agent (optional) |
-| `TAVILY_API_KEY` | [tavily.com](https://tavily.com) | ai_startup_trend_analysis_agent (optional) |
-
-Most agents only need `OPENAI_API_KEY`. Optional keys unlock extra capabilities.
-
----
-
-## 📖 Agent Details
-
-### 1. Blog to Podcast Agent
-**Folder:** `ai_blog_to_podcast_agent`
-
-Scrapes any blog URL → GPT-4o-mini writes a conversational 3-minute podcast script → OpenAI TTS converts it to `podcast.mp3`.
-
-Perfect for: content creators who want audio versions of written articles.
-
----
-
-### 2. Breakup Recovery Agent
-**Folder:** `ai_breakup_recovery_agent`
-
-An empathetic conversational companion using CBT and positive psychology techniques. Validates emotions, asks thoughtful questions, and suggests one concrete recovery micro-action per turn.
-
----
-
-### 3. Data Analysis Agent
-**Folder:** `ai_data_analysis_agent`
-
-Load any CSV and ask data questions in plain English. The agent generates pandas code, executes it, and explains the result. Like having a junior data analyst on demand.
-
----
-
-### 4. Data Visualisation Agent
-**Folder:** `ai_data_visualisation_agent`
-
-Describe the chart you want, get an interactive Plotly chart in your browser. "Bar chart of sales by region sorted descending" → working chart in 5 seconds.
-
----
-
-### 5. Life Insurance Advisor Agent
-**Folder:** `ai_life_insurance_advisor_agent`
-
-Collects your profile (age, income, dependants, health) and applies the DIME formula to recommend policy type, coverage amount, and premium range. Educational only.
-
----
-
-### 6. Medical Imaging Agent
-**Folder:** `ai_medical_imaging_agent`
-
-GPT-4o Vision analyses medical images: identifies modality and body region, describes anatomy, notes findings, and provides educational takeaways. **Not a diagnostic tool.**
-
----
-
-### 7. Meme Generator Agent (Browser Use)
-**Folder:** `ai_meme_generator_agent_browseruse`
-
-GPT-4o-mini picks the meme template and writes captions. `browser-use` then autonomously navigates imgflip.com and creates the meme. Combines LLM + browser automation.
-
----
-
-### 8. Music Generator Agent
-**Folder:** `ai_music_generator_agent`
-
-Enter a mood, genre, and theme → get AI lyrics + a 15-second AI-generated instrumental via Replicate's MusicGen model.
-
----
-
-### 9. Reasoning Agent
-**Folder:** `ai_reasoning_agent`
-
-Solves complex problems (math, logic, code, science) with a fully visible chain-of-thought: break down → verify → answer. Optionally uses `o1-mini` for deeper reasoning.
-
----
-
-### 10. Startup Trend Analysis Agent
-**Folder:** `ai_startup_trend_analysis_agent`
-
-Enter a market sector, get a 6-section trend report: market size, top trends, competitive landscape, white-space opportunities, risks, and recommended startup focus areas.
-
----
-
-### 11. Travel Agent
-**Folder:** `ai_travel_agent`
-
-Personalised day-by-day itinerary for any destination: activities, accommodation, food, transport, budget breakdown, cultural tips, and packing list.
-
----
-
-### 12. Mixture of Agents
-**Folder:** `mixture_of_agents`
-
-4 specialist agents (Analytical, Creative, Devil's Advocate, Practical) answer in parallel via `asyncio`. A coordinator synthesises all four into one superior response.
-
----
-
-### 13. Multimodal AI Agent
-**Folder:** `multimodal_ai_agent`
-
-Conversational agent that understands text + images together. Pass one or more image paths per turn. Supports follow-up questions with full conversation memory.
-
----
-
-### 14. OpenAI Research Agent
-**Folder:** `openai_research_agent`
-
-Uses OpenAI's native `web_search_preview` tool to research any topic. Three depth levels: quick (bullets) / standard (400 words) / deep (800 words).
-
----
-
-### 15. Web Scraping Agent
-**Folder:** `web_scraping_ai_agent`
-
-Scrape any URL, then ask extraction questions in plain English. "List all pricing tiers" or "What are the top headlines?" — the agent extracts exactly what you need.
-
----
-
-### 16. xAI Finance Agent
-**Folder:** `xai_finance_agent`
-
-Conversational finance analyst powered by xAI's Grok (falls back to GPT-4o-mini). Stock analysis, macro trends, earnings interpretation, risk management — with conversation memory.
-
----
-
-## 🧠 Design Principles
-
-Every agent in this collection follows the same three principles:
-
-**1. Single file, single responsibility**
-Each agent is one `agent.py` file. No complex architectures. You can read and understand any agent in 5 minutes.
-
-**2. Graceful degradation**
-Optional API keys (Replicate, Tavily, xAI) degrade gracefully — the agent still runs and tells you what's missing.
-
-**3. Easy to extend**
-The simplest extension to any agent is adding a new system prompt variant or chaining two agents together. Start here and build up.
-
----
-
-## 📚 Learning Path
-
-If you're new to AI agents, start in this order:
-
-1. `ai_reasoning_agent` — learn how system prompts shape behaviour
-2. `ai_travel_agent` — learn structured output from LLMs
-3. `ai_data_analysis_agent` — learn code generation + execution
-4. `mixture_of_agents` — learn parallel calls with asyncio
-5. `ai_blog_to_podcast_agent` — learn multi-step pipelines
-6. `ai_meme_generator_agent_browseruse` — learn browser automation
-
----
-
-## 🙏 Credits
-
-Built on top of the original [awesome-llm-apps](https://github.com/Shubhamsaboo/awesome-llm-apps) collection by [@Shubhamsaboo](https://github.com/Shubhamsaboo). This repo recreates all 16 starter agents with clean, modular, well-commented code.
-
----
+That still needs:
+
+- a `wrangler.toml`
+- a Worker entry point
+- a way to run this Python code on Workers: Cloudflare Python Workers, or a JavaScript/TypeScript port of the example you want to serve
 
 ## License
 
-No license file is currently included. Add an explicit license before redistributing implementation code or data.
+No `LICENSE` file is included yet (see Limitations). Upstream: [awesome-llm-apps](https://github.com/Shubhamsaboo/awesome-llm-apps), Apache-2.0.
