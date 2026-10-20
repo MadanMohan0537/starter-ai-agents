@@ -47,6 +47,7 @@ Checked by reading the files in this repository. None of the examples were execu
 - Root files: `.env.example`, `.gitignore`, and this README. `.env.example` lists `OPENAI_API_KEY`, `XAI_API_KEY`, `REPLICATE_API_TOKEN`, and `TAVILY_API_KEY`.
 - No sample CSV, image, or audio file is in the repo. `ai_data_analysis_agent` and `ai_data_visualisation_agent` default to `data.csv`. `ai_medical_imaging_agent` defaults to `sample.jpg` and exits when that path is missing.
 - No tests, no CI configuration, no `LICENSE`, and no `NOTICE`.
+- No `wrangler.toml`, Worker entry point, or other Cloudflare Workers config. See Deployment.
 - `ai_x402_paying_agent` exists upstream and is not in this repo. Nothing in this repo implements it.
 
 ## How success would be measured
@@ -82,6 +83,22 @@ python agent.py
 For any other example, read that folder's README first. Some need another key, a CSV or image you supply, or an extra tool.
 
 Suggested reading order: `ai_reasoning_agent` → `ai_travel_agent` → `ai_data_analysis_agent` → `mixture_of_agents` → `ai_blog_to_podcast_agent` → `ai_meme_generator_agent_browseruse`.
+
+## Deployment
+
+Cloudflare Workers is the planned deploy target. It is not configured yet, and nothing in this repo is deployed there.
+
+There is no `wrangler.toml` and no Worker entry point, so there is no Worker name and no workers.dev URL to preserve. The command to use once a Worker exists is:
+
+```bash
+npx wrangler deploy
+```
+
+That still needs:
+
+- a `wrangler.toml`
+- a Worker entry point
+- a way to run this Python code on Workers: Cloudflare Python Workers, or a JavaScript/TypeScript port of the example you want to serve
 
 ## License
 
